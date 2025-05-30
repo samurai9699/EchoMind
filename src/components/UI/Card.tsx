@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useAppContext } from '../../context/AppContext';
 
 interface CardProps {
   children: React.ReactNode;
@@ -16,7 +17,17 @@ const Card: React.FC<CardProps> = ({
   animate = false,
   delay = 0
 }) => {
-  const baseClasses = 'bg-white rounded-lg shadow-md overflow-hidden';
+  const { settings } = useAppContext();
+  
+  const baseClasses = `
+    transition-all duration-300
+    ${settings.darkMode 
+      ? 'bg-dark-card border border-dark-border'
+      : 'bg-white border border-neutral-lighter'
+    }
+    rounded-lg shadow-md overflow-hidden
+  `;
+  
   const clickableClasses = onClick ? 'cursor-pointer hover:shadow-lg transition-shadow' : '';
   
   const cardClasses = `${baseClasses} ${clickableClasses} ${className}`;

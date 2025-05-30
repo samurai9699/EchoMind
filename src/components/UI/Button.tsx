@@ -1,4 +1,5 @@
 import React from 'react';
+import { useAppContext } from '../../context/AppContext';
 
 type ButtonVariant = 'primary' | 'secondary' | 'accent' | 'danger' | 'ghost';
 type ButtonSize = 'sm' | 'md' | 'lg';
@@ -24,8 +25,15 @@ const Button: React.FC<ButtonProps> = ({
   disabled,
   ...props
 }) => {
+  const { settings } = useAppContext();
+  
   // Base classes
-  let baseClasses = 'font-medium rounded-md transition-all focus:outline-none focus:ring-2 focus:ring-opacity-50 flex items-center justify-center';
+  const baseClasses = `
+    font-medium rounded-md transition-all duration-300
+    focus:outline-none focus:ring-2 focus:ring-opacity-50
+    flex items-center justify-center
+    ${settings.darkMode ? 'text-dark-text' : ''}
+  `;
   
   // Size classes
   const sizeClasses = {
@@ -34,13 +42,23 @@ const Button: React.FC<ButtonProps> = ({
     lg: 'text-lg py-2.5 px-5',
   };
   
-  // Variant classes
+  // Variant classes for both light and dark modes
   const variantClasses = {
-    primary: 'bg-primary hover:bg-primary-dark text-white focus:ring-primary-light',
-    secondary: 'bg-secondary hover:bg-secondary-dark text-white focus:ring-secondary-light',
-    accent: 'bg-accent hover:bg-accent-dark text-white focus:ring-accent-light',
-    danger: 'bg-error hover:bg-error-dark text-white focus:ring-error-light',
-    ghost: 'bg-transparent hover:bg-neutral-lighter text-neutral-darkest focus:ring-neutral-light',
+    primary: settings.darkMode
+      ? 'bg-primary-dark hover:bg-primary text-white focus:ring-primary-light'
+      : 'bg-primary hover:bg-primary-dark text-white focus:ring-primary-light',
+    secondary: settings.darkMode
+      ? 'bg-secondary-dark hover:bg-secondary text-white focus:ring-secondary-light'
+      : 'bg-secondary hover:bg-secondary-dark text-white focus:ring-secondary-light',
+    accent: settings.darkMode
+      ? 'bg-accent-dark hover:bg-accent text-white focus:ring-accent-light'
+      : 'bg-accent hover:bg-accent-dark text-white focus:ring-accent-light',
+    danger: settings.darkMode
+      ? 'bg-error-dark hover:bg-error text-white focus:ring-error-light'
+      : 'bg-error hover:bg-error-dark text-white focus:ring-error-light',
+    ghost: settings.darkMode
+      ? 'bg-dark-card hover:bg-dark-border text-dark-text focus:ring-dark-border'
+      : 'bg-transparent hover:bg-neutral-lighter text-neutral-darkest focus:ring-neutral-light',
   };
   
   // Disabled state
