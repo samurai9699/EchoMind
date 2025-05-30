@@ -72,7 +72,7 @@ const AIChat: React.FC = () => {
   };
   
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-screen min-h-screen">
       <div className="flex-shrink-0 bg-white dark:bg-dark-bg px-4 pb-2">
         <AppHeader title="Support Chat" />
       </div>
@@ -134,8 +134,8 @@ const AIChat: React.FC = () => {
           </div>
         </div>
       </div>
-      <div className="flex-shrink-0 border-t bg-white dark:bg-dark-card dark:border-dark-border">
-        <div className="max-w-2xl mx-auto flex items-end gap-2 p-4">
+      <div className="flex-shrink-0 border-t bg-white dark:bg-dark-card dark:border-dark-border" style={{ minHeight: '80px' }}>
+        <div className="max-w-2xl mx-auto flex items-end gap-2 p-4" style={{ position: 'relative', zIndex: 10 }}>
           <textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
@@ -148,6 +148,7 @@ const AIChat: React.FC = () => {
                 : 'bg-neutral-lightest border border-neutral-lighter text-neutral-darkest placeholder-neutral-medium'
               }`}
             rows={1}
+            style={{ visibility: 'visible', opacity: 1 }}
           />
           <Button
             onClick={handleSendMessage}
