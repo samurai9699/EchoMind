@@ -26,16 +26,14 @@ const AIChat: React.FC = () => {
   ];
   
   useEffect(() => {
-    const scrollToBottom = () => {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    };
-    
     scrollToBottom();
-    
-    // Add a slight delay to ensure smooth scrolling after new messages
-    const timer = setTimeout(scrollToBottom, 100);
-    return () => clearTimeout(timer);
   }, [chatMessages]);
+
+  const scrollToBottom = () => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
   
   const handleSendMessage = () => {
     if (message.trim()) {
@@ -44,9 +42,9 @@ const AIChat: React.FC = () => {
       setShowQuickResponses(false);
       setIsTyping(true);
       
-      // Simulate AI typing
       setTimeout(() => {
         setIsTyping(false);
+        scrollToBottom();
       }, 2000);
     }
   };
@@ -61,6 +59,7 @@ const AIChat: React.FC = () => {
       
       setTimeout(() => {
         setIsTyping(false);
+        scrollToBottom();
       }, 2000);
     }
   };
@@ -73,15 +72,15 @@ const AIChat: React.FC = () => {
   };
   
   return (
-    <PageContainer className="p-0 flex flex-col h-screen">
-      <div className="px-4">
+    <div className="flex flex-col h-screen bg-white dark:bg-dark-bg">
+      <div className="px-4 flex-shrink-0">
         <AppHeader title="Support Chat" />
       </div>
       
-      <div className={`flex-1 overflow-y-auto px-4 py-2 transition-colors duration-300 ${
+      <div className={`flex-1 overflow-y-auto px-4 py-2 pb-4 transition-colors duration-300 ${
         settings.darkMode ? 'bg-dark-bg' : 'bg-neutral-lightest'
       }`}>
-        <div className="max-w-md mx-auto space-y-4 pb-4">
+        <div className="max-w-2xl mx-auto space-y-4">
           {chatMessages.map((msg, index) => (
             <MessageBubble key={msg.id} message={msg} delay={index * 0.1} />
           ))}
@@ -140,37 +139,39 @@ const AIChat: React.FC = () => {
         </div>
       </div>
       
-      <div className={`p-4 border-t transition-colors duration-300 ${
+      <div className={`flex-shrink-0 border-t p-4 transition-colors duration-300 ${
         settings.darkMode 
           ? 'bg-dark-card border-dark-border' 
           : 'bg-white border-neutral-lighter'
       }`}>
-        <div className="max-w-md mx-auto flex gap-2">
+        <div className="max-w-2xl mx-auto flex gap-2">
           <textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Type your message..."
-            className={`flex-1 resize-none rounded-lg p-3 transition-colors duration-300
+            className={`flex-1 min-h-[44px] max-h-32 rounded-lg p-3 resize-y transition-colors duration-300
               focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-transparent
               ${settings.darkMode 
                 ? 'bg-dark-bg border-dark-border text-dark-text placeholder-neutral-medium' 
-                : 'bg-neutral-lightest border-neutral-lighter text-neutral-darkest'
+                : 'bg-neutral-lightest border-neutral-lighter text-neutral-darkest placeholder-neutral-medium'
               }`}
             rows={1}
           />
           <Button
             onClick={handleSendMessage}
             disabled={!message.trim()}
-            className="px-4 h-full"
+            className="px-4 h-[44px] flex-shrink-0"
           >
             <Send size={20} />
           </Button>
         </div>
       </div>
       
-      <BottomNavigation />
-    </PageContainer>
+      <div className="flex-shrink-0">
+        <BottomNavigation />
+      </div>
+    </div>
   );
 };
 
@@ -195,8 +196,8 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, delay }) => {
           isAI
             ? settings.darkMode
               ? 'bg-dark-card text-dark-text'
-              : 'bg-white text-neutral-darkest'
-            : 'bg-primary text-white'
+              : 'bg-white text-neutral-darkest shadow-md'
+            : 'bg-primary text-white shadow-md'
         }`}
       >
         <p className="text-sm md:text-base">{message.text}</p>
