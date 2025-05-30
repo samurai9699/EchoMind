@@ -13,7 +13,7 @@ import AIChat from './pages/AIChat';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
-  const { isDisguised, inEmergency } = useAppContext();
+  const { isDisguised, inEmergency, settings } = useAppContext();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -27,7 +27,9 @@ function App() {
   }, [isDisguised, inEmergency, navigate, location.pathname]);
 
   return (
-    <div className="min-h-screen bg-neutral-lightest font-rounded text-neutral-darkest">
+    <div className={`min-h-screen font-rounded transition-colors duration-300 ${
+      settings.darkMode ? 'dark bg-dark-bg text-dark-text' : 'bg-neutral-lightest text-neutral-darkest'
+    }`}>
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<DisguisedHome />} />

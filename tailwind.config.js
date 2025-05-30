@@ -3,6 +3,7 @@ import { theme } from './src/styles/theme';
 
 export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: theme.colors,
@@ -33,12 +34,17 @@ export default {
           '0%': { transform: 'translateY(20px)', opacity: 0 },
           '100%': { transform: 'translateY(0)', opacity: 1 },
         },
+        pulse: {
+          '0%, 100%': { transform: 'scale(1)' },
+          '50%': { transform: 'scale(1.05)' },
+        },
       },
       animation: {
         'breathe-in': 'breatheIn 4s ease-in-out forwards',
         'breathe-out': 'breatheOut 6s ease-in-out forwards',
         'fade-in': 'fadeIn 0.5s ease-out forwards',
         'slide-up': 'slideUp 0.7s ease-out forwards',
+        'pulse-slow': 'pulse 3s ease-in-out infinite',
       },
     },
   },

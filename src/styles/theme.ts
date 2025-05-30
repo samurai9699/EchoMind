@@ -1,54 +1,60 @@
 export const theme = {
   colors: {
     primary: {
-      light: '#A6D1E6',
+      light: '#E6EEF9',
       DEFAULT: '#7FB3D5',
       dark: '#5A93B8',
     },
     secondary: {
-      light: '#D7C6E3',
+      light: '#F0E6F9',
       DEFAULT: '#B39DDB',
       dark: '#9575CD',
     },
     accent: {
-      light: '#7EBDC2',
+      light: '#E6F9F7',
       DEFAULT: '#4DB6AC',
       dark: '#26A69A',
     },
     error: {
-      light: '#EF9A9A',
+      light: '#FCEAEA',
       DEFAULT: '#F44336',
       dark: '#C62828',
     },
     warning: {
-      light: '#FFE082',
+      light: '#FFF8E6',
       DEFAULT: '#FFC107',
       dark: '#FF8F00',
     },
     success: {
-      light: '#A5D6A7',
+      light: '#E8F5E9',
       DEFAULT: '#4CAF50',
       dark: '#2E7D32',
     },
     neutral: {
       white: '#FFFFFF',
-      lightest: '#F7F7F7',
-      lighter: '#E5E5E5',
-      light: '#D4D4D4',
-      medium: '#A0A0A0',
-      dark: '#737373',
-      darker: '#404040',
-      darkest: '#262626',
-      black: '#171717',
+      lightest: '#F8FAFC',
+      lighter: '#F1F5F9',
+      light: '#E2E8F0',
+      medium: '#94A3B8',
+      dark: '#64748B',
+      darker: '#334155',
+      darkest: '#1E293B',
+      black: '#0F172A',
     },
     calculator: {
-      display: '#F0F0F0',
+      display: '#F8FAFC',
       button: {
         number: '#FFFFFF',
-        operator: '#F5F5F5',
+        operator: '#F1F5F9',
         equals: '#7FB3D5',
-        clear: '#FFD7D7',
+        clear: '#FCEAEA',
       }
+    },
+    dark: {
+      bg: '#0F172A',
+      card: '#1E293B',
+      border: '#334155',
+      text: '#F1F5F9',
     },
   },
   fonts: {
@@ -63,7 +69,7 @@ export const theme = {
     xl: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
   },
   borderRadius: {
-    sm: '0.25rem',
+    sm: '0.375rem',
     DEFAULT: '0.5rem',
     md: '0.75rem',
     lg: '1rem',
