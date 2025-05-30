@@ -24,16 +24,16 @@ const AIChat: React.FC = () => {
     { text: "I need to breathe", icon: Wind, color: 'text-primary', action: () => navigate('/breathing') },
     { text: "Just listen please", icon: Brain, color: 'text-secondary' },
   ];
-  
-  useEffect(() => {
-    scrollToBottom();
-  }, [chatMessages]);
 
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   };
+  
+  useEffect(() => {
+    scrollToBottom();
+  }, [chatMessages]);
   
   const handleSendMessage = () => {
     if (message.trim()) {
@@ -72,15 +72,15 @@ const AIChat: React.FC = () => {
   };
   
   return (
-    <div className="flex flex-col h-screen bg-white dark:bg-dark-bg">
-      <div className="px-4 flex-shrink-0">
+    <div className="flex flex-col h-screen">
+      <div className="flex-shrink-0 bg-white dark:bg-dark-bg px-4 pb-2">
         <AppHeader title="Support Chat" />
       </div>
       
-      <div className={`flex-1 overflow-y-auto px-4 py-2 pb-4 transition-colors duration-300 ${
+      <div className={`flex-1 overflow-y-auto px-4 transition-colors duration-300 ${
         settings.darkMode ? 'bg-dark-bg' : 'bg-neutral-lightest'
       }`}>
-        <div className="max-w-2xl mx-auto space-y-4">
+        <div className="max-w-2xl mx-auto space-y-4 py-4">
           {chatMessages.map((msg, index) => (
             <MessageBubble key={msg.id} message={msg} delay={index * 0.1} />
           ))}
@@ -139,12 +139,12 @@ const AIChat: React.FC = () => {
         </div>
       </div>
       
-      <div className={`flex-shrink-0 border-t p-4 transition-colors duration-300 ${
+      <div className={`flex-shrink-0 border-t transition-colors duration-300 ${
         settings.darkMode 
           ? 'bg-dark-card border-dark-border' 
           : 'bg-white border-neutral-lighter'
       }`}>
-        <div className="max-w-2xl mx-auto flex gap-2">
+        <div className="max-w-2xl mx-auto flex items-end gap-2 p-4">
           <textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
@@ -154,7 +154,7 @@ const AIChat: React.FC = () => {
               focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-transparent
               ${settings.darkMode 
                 ? 'bg-dark-bg border-dark-border text-dark-text placeholder-neutral-medium' 
-                : 'bg-neutral-lightest border-neutral-lighter text-neutral-darkest placeholder-neutral-medium'
+                : 'bg-neutral-lightest border border-neutral-lighter text-neutral-darkest placeholder-neutral-medium'
               }`}
             rows={1}
           />
