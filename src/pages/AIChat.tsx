@@ -76,74 +76,65 @@ const AIChat: React.FC = () => {
       <div className="flex-shrink-0 bg-white dark:bg-dark-bg px-4 pb-2">
         <AppHeader title="Support Chat" />
       </div>
-      
-      <div className={`flex-1 overflow-y-auto px-4 transition-colors duration-300 ${
-        settings.darkMode ? 'bg-dark-bg' : 'bg-neutral-lightest'
-      }`}>
-        <div className="max-w-2xl mx-auto space-y-4 py-4">
-          {chatMessages.map((msg, index) => (
-            <MessageBubble key={msg.id} message={msg} delay={index * 0.1} />
-          ))}
-          
-          {isTyping && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="flex justify-start"
-            >
-              <Card className="px-4 py-2">
-                <div className="flex space-x-2">
-                  <div className="w-2 h-2 rounded-full bg-primary animate-bounce" />
-                  <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0.2s' }} />
-                  <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0.4s' }} />
-                </div>
-              </Card>
-            </motion.div>
-          )}
-          
-          {showQuickResponses && chatMessages.length === 1 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-              className="space-y-2"
-            >
-              <p className={`text-sm mb-3 transition-colors duration-300 ${
-                settings.darkMode ? 'text-neutral-lighter' : 'text-neutral-dark'
-              }`}>
-                How can I help you today?
-              </p>
-              {quickResponses.map((response, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.7 + index * 0.1 }}
-                >
-                  <Button
-                    variant="ghost"
-                    fullWidth
-                    leftIcon={<response.icon size={18} className={response.color} />}
-                    onClick={() => handleQuickResponse(response.text, response.action)}
-                    className="justify-start"
+      <div className="flex-1 overflow-y-auto px-4 bg-neutral-lightest dark:bg-dark-bg">
+        <div className="max-w-2xl mx-auto h-full flex flex-col justify-between">
+          <div className="space-y-4 py-4">
+            {chatMessages.map((msg, index) => (
+              <MessageBubble key={msg.id} message={msg} delay={index * 0.1} />
+            ))}
+            {isTyping && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="flex justify-start"
+              >
+                <Card className="px-4 py-2">
+                  <div className="flex space-x-2">
+                    <div className="w-2 h-2 rounded-full bg-primary animate-bounce" />
+                    <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0.2s' }} />
+                    <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0.4s' }} />
+                  </div>
+                </Card>
+              </motion.div>
+            )}
+            {showQuickResponses && chatMessages.length === 1 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="space-y-2"
+              >
+                <p className={`text-sm mb-3 transition-colors duration-300 ${
+                  settings.darkMode ? 'text-neutral-lighter' : 'text-neutral-dark'
+                }`}>
+                  How can I help you today?
+                </p>
+                {quickResponses.map((response, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.7 + index * 0.1 }}
                   >
-                    {response.text}
-                  </Button>
-                </motion.div>
-              ))}
-            </motion.div>
-          )}
-          
-          <div ref={messagesEndRef} />
+                    <Button
+                      variant="ghost"
+                      fullWidth
+                      leftIcon={<response.icon size={18} className={response.color} />}
+                      onClick={() => handleQuickResponse(response.text, response.action)}
+                      className="justify-start"
+                    >
+                      {response.text}
+                    </Button>
+                  </motion.div>
+                ))}
+              </motion.div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
         </div>
       </div>
-      
-      <div className={`flex-shrink-0 border-t transition-colors duration-300 ${
-        settings.darkMode 
-          ? 'bg-dark-card border-dark-border' 
-          : 'bg-white border-neutral-lighter'
-      }`}>
+      <div className="flex-shrink-0 border-t bg-white dark:bg-dark-card dark:border-dark-border">
         <div className="max-w-2xl mx-auto flex items-end gap-2 p-4">
           <textarea
             value={message}
@@ -167,7 +158,6 @@ const AIChat: React.FC = () => {
           </Button>
         </div>
       </div>
-      
       <div className="flex-shrink-0">
         <BottomNavigation />
       </div>
