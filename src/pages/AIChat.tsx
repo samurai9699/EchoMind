@@ -1,28 +1,40 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Send, Heart, Brain, Sparkles } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Send, Heart, Brain, Sparkles, Wind } from 'lucide-react';
 import PageContainer from '../components/Layout/PageContainer';
 import AppHeader from '../components/Layout/AppHeader';
 import BottomNavigation from '../components/Layout/BottomNavigation';
 import Button from '../components/UI/Button';
+import Card from '../components/UI/Card';
 import { useAppContext } from '../context/AppContext';
 import { ChatMessage } from '../types';
+import { useNavigate } from 'react-router-dom';
 
 const AIChat: React.FC = () => {
   const { chatMessages, sendMessage, settings } = useAppContext();
   const [message, setMessage] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [showQuickResponses, setShowQuickResponses] = useState(true);
+  const navigate = useNavigate();
   
   const quickResponses = [
-    { text: "I need to calm down", icon: Heart },
-    { text: "Help me feel grounded", icon: Sparkles },
-    { text: "Just listen please", icon: Brain },
+    { text: "I'm feeling anxious", icon: Heart, color: 'text-error' },
+    { text: "Help me feel grounded", icon: Sparkles, color: 'text-accent' },
+    { text: "I need to breathe", icon: Wind, color: 'text-primary', action: () => navigate('/breathing') },
+    { text: "Just listen please", icon: Brain, color: 'text-secondary' },
   ];
   
-  // Scroll to bottom when messages change
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const scrollToBottom = () => {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    };
+    
+    scrollToBottom();
+    
+    // Add a slight delay to ensure smooth scrolling after new messages
+    const timer = setTimeout(scrollToBottom, 100);
+    return () => clearTimeout(timer);
   }, [chatMessages]);
   
   const handleSendMessage = () => {
@@ -30,12 +42,27 @@ const AIChat: React.FC = () => {
       sendMessage(message.trim());
       setMessage('');
       setShowQuickResponses(false);
+      setIsTyping(true);
+      
+      // Simulate AI typing
+      setTimeout(() => {
+        setIsTyping(false);
+      }, 2000);
     }
   };
   
-  const handleQuickResponse = (text: string) => {
-    sendMessage(text);
-    setShowQuickResponses(false);
+  const handleQuickResponse = (text: string, action?: () => void) => {
+    if (action) {
+      action();
+    } else {
+      sendMessage(text);
+      setShowQuickResponses(false);
+      setIsTyping(true);
+      
+      setTimeout(() => {
+        setIsTyping(false);
+      }, 2000);
+    }
   };
   
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -59,6 +86,23 @@ const AIChat: React.FC = () => {
             <MessageBubble key={msg.id} message={msg} delay={index * 0.1} />
           ))}
           
+          {isTyping && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="flex justify-start"
+            >
+              <Card className="px-4 py-2">
+                <div className="flex space-x-2">
+                  <div className="w-2 h-2 rounded-full bg-primary animate-bounce" />
+                  <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0.2s' }} />
+                  <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0.4s' }} />
+                </div>
+              </Card>
+            </motion.div>
+          )}
+          
           {showQuickResponses && chatMessages.length === 1 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -66,6 +110,11 @@ const AIChat: React.FC = () => {
               transition={{ delay: 0.5 }}
               className="space-y-2"
             >
+              <p className={`text-sm mb-3 transition-colors duration-300 ${
+                settings.darkMode ? 'text-neutral-lighter' : 'text-neutral-dark'
+              }`}>
+                How can I help you today?
+              </p>
               {quickResponses.map((response, index) => (
                 <motion.div
                   key={index}
@@ -76,8 +125,8 @@ const AIChat: React.FC = () => {
                   <Button
                     variant="ghost"
                     fullWidth
-                    leftIcon={<response.icon size={18} />}
-                    onClick={() => handleQuickResponse(response.text)}
+                    leftIcon={<response.icon size={18} className={response.color} />}
+                    onClick={() => handleQuickResponse(response.text, response.action)}
                     className="justify-start"
                   >
                     {response.text}

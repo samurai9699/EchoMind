@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppContext } from '../../context/AppContext';
 
@@ -15,62 +15,72 @@ const BreathingCircle: React.FC<BreathingCircleProps> = ({
 }) => {
   const [phase, setPhase] = useState<'in' | 'hold' | 'out' | 'rest'>('rest');
   const [count, setCount] = useState(0);
-  const [timeRemaining, setTimeRemaining] = useState(duration * 60); // in seconds
+  const [timeRemaining, setTimeRemaining] = useState(duration * 60);
   const [isCompleted, setIsCompleted] = useState(false);
   const { settings } = useAppContext();
-  
-  // 4-7-8 breathing technique
+
+  // 4-7-8 breathing pattern
   const breatheInTime = 4;
   const holdTime = 7;
   const breatheOutTime = 8;
   const restTime = 2;
-  
-  // Total cycles based on duration
+
   const totalCycles = Math.floor((duration * 60) / (breatheInTime + holdTime + breatheOutTime + restTime));
-  
+
+  const getNextPhase = useCallback((currentPhase: typeof phase) => {
+    switch (currentPhase) {
+      case 'in': return 'hold';
+      case 'hold': return 'out';
+      case 'out': return 'rest';
+      case 'rest': return 'in';
+      default: return 'in';
+    }
+  }, []);
+
+  const getPhaseTime = useCallback((currentPhase: typeof phase) => {
+    switch (currentPhase) {
+      case 'in': return breatheInTime * 1000;
+      case 'hold': return holdTime * 1000;
+      case 'out': return breatheOutTime * 1000;
+      case 'rest': return restTime * 1000;
+      default: return 1000;
+    }
+  }, []);
+
   useEffect(() => {
-    let interval: NodeJS.Timeout;
     let phaseTimer: NodeJS.Timeout;
-    
+    let countdownTimer: NodeJS.Timeout;
+
     if (isActive && !isCompleted) {
-      // Start breathing cycle
       setPhase('in');
-      
-      // Play sound if enabled
-      if (settings.soundEnabled) {
-        const audio = new Audio('/sounds/soft-bell.mp3'); // To be added later
-        audio.volume = 0.3;
-        audio.play().catch(() => {}); // Ignore autoplay restrictions
-      }
-      
-      // Phase timer
-      phaseTimer = setInterval(() => {
+
+      const advancePhase = () => {
         setPhase(currentPhase => {
-          switch (currentPhase) {
-            case 'in':
-              return 'hold';
-            case 'hold':
-              return 'out';
-            case 'out':
-              return 'rest';
-            case 'rest':
-              setCount(c => {
-                const newCount = c + 1;
-                if (newCount >= totalCycles) {
-                  setIsCompleted(true);
-                  if (onComplete) onComplete();
-                }
-                return newCount;
-              });
-              return 'in';
-            default:
-              return 'in';
+          const nextPhase = getNextPhase(currentPhase);
+          
+          if (nextPhase === 'in') {
+            setCount(c => {
+              const newCount = c + 1;
+              if (newCount >= totalCycles) {
+                setIsCompleted(true);
+                if (onComplete) onComplete();
+              }
+              return newCount;
+            });
           }
+
+          if (settings.soundEnabled) {
+            const audio = new Audio('/sounds/soft-bell.mp3');
+            audio.volume = 0.3;
+            audio.play().catch(() => {});
+          }
+
+          return nextPhase;
         });
-      }, getPhaseTime());
-      
-      // Countdown timer
-      interval = setInterval(() => {
+      };
+
+      phaseTimer = setInterval(advancePhase, getPhaseTime(phase));
+      countdownTimer = setInterval(() => {
         setTimeRemaining(time => {
           const newTime = time - 1;
           if (newTime <= 0) {
@@ -82,14 +92,13 @@ const BreathingCircle: React.FC<BreathingCircleProps> = ({
         });
       }, 1000);
     }
-    
+
     return () => {
-      clearInterval(interval);
       clearInterval(phaseTimer);
+      clearInterval(countdownTimer);
     };
-  }, [isActive, isCompleted, onComplete, totalCycles, settings.soundEnabled]);
-  
-  // Reset state when exercise is restarted
+  }, [isActive, isCompleted, onComplete, phase, getNextPhase, getPhaseTime, settings.soundEnabled, totalCycles]);
+
   useEffect(() => {
     if (!isActive) {
       setPhase('rest');
@@ -98,40 +107,30 @@ const BreathingCircle: React.FC<BreathingCircleProps> = ({
       setIsCompleted(false);
     }
   }, [isActive, duration]);
-  
-  function getPhaseTime() {
-    switch (phase) {
-      case 'in': return breatheInTime * 1000;
-      case 'hold': return holdTime * 1000;
-      case 'out': return breatheOutTime * 1000;
-      case 'rest': return restTime * 1000;
-      default: return 1000;
-    }
-  }
-  
-  function getInstruction() {
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  };
+
+  const getInstruction = () => {
     switch (phase) {
       case 'in': return 'Breathe in slowly...';
       case 'hold': return 'Hold gently...';
       case 'out': return 'Release softly...';
-      case 'rest': return 'Rest...';
+      case 'rest': return 'Pause...';
       default: return '';
     }
-  }
-  
-  function formatTime(seconds: number) {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-  }
-  
+  };
+
   const circleVariants = {
     in: {
       scale: [1, 1.5],
       opacity: [0.7, 1],
       transition: { 
         duration: breatheInTime,
-        ease: 'easeInOut',
+        ease: [0.4, 0, 0.2, 1]
       }
     },
     hold: {
@@ -147,7 +146,7 @@ const BreathingCircle: React.FC<BreathingCircleProps> = ({
       opacity: [1, 0.7],
       transition: { 
         duration: breatheOutTime,
-        ease: 'easeInOut'
+        ease: [0.4, 0, 0.2, 1]
       }
     },
     rest: {
@@ -165,25 +164,34 @@ const BreathingCircle: React.FC<BreathingCircleProps> = ({
       settings.darkMode ? 'text-dark-text' : 'text-neutral-darkest'
     }`}>
       <div className="relative flex items-center justify-center mb-8">
+        {/* Outer circle */}
         <motion.div
           variants={circleVariants}
           animate={isActive ? phase : 'rest'}
-          className={`w-48 h-48 rounded-full ${
-            settings.darkMode ? 'bg-primary-dark opacity-30' : 'bg-primary-light opacity-70'
+          className={`w-64 h-64 rounded-full transition-colors duration-300 ${
+            settings.darkMode 
+              ? 'bg-primary-dark/20 backdrop-blur-sm' 
+              : 'bg-primary-light/70'
           }`}
         />
+        {/* Middle circle */}
         <motion.div
           variants={circleVariants}
           animate={isActive ? phase : 'rest'}
-          className={`absolute w-36 h-36 rounded-full ${
-            settings.darkMode ? 'bg-primary opacity-40' : 'bg-primary opacity-80'
+          className={`absolute w-48 h-48 rounded-full transition-colors duration-300 ${
+            settings.darkMode 
+              ? 'bg-primary/30 backdrop-blur-sm' 
+              : 'bg-primary/80'
           }`}
         />
+        {/* Inner circle */}
         <motion.div
           variants={circleVariants}
           animate={isActive ? phase : 'rest'}
-          className={`absolute w-24 h-24 rounded-full ${
-            settings.darkMode ? 'bg-primary-light opacity-50' : 'bg-primary-dark opacity-90'
+          className={`absolute w-32 h-32 rounded-full transition-colors duration-300 ${
+            settings.darkMode 
+              ? 'bg-primary-light/40 backdrop-blur-sm' 
+              : 'bg-primary-dark/90'
           }`}
         />
       </div>
@@ -197,13 +205,13 @@ const BreathingCircle: React.FC<BreathingCircleProps> = ({
           transition={{ duration: 0.3 }}
           className="text-center"
         >
-          <h3 className={`text-2xl font-medium mb-2 ${
+          <h3 className={`text-2xl font-medium mb-2 transition-colors duration-300 ${
             settings.darkMode ? 'text-primary-light' : 'text-primary-dark'
           }`}>
             {isActive ? getInstruction() : 'Ready to begin'}
           </h3>
           {isActive && (
-            <div className={`text-sm ${
+            <div className={`text-sm transition-colors duration-300 ${
               settings.darkMode ? 'text-neutral-lighter' : 'text-neutral-dark'
             }`}>
               <p>Cycle {count + 1} of {totalCycles}</p>
