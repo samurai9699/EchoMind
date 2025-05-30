@@ -1,22 +1,41 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Send } from 'lucide-react';
+import { Send, Heart, Brain, Sparkles } from 'lucide-react';
 import PageContainer from '../components/Layout/PageContainer';
 import AppHeader from '../components/Layout/AppHeader';
 import BottomNavigation from '../components/Layout/BottomNavigation';
+import Button from '../components/UI/Button';
 import { useAppContext } from '../context/AppContext';
 import { ChatMessage } from '../types';
 
 const AIChat: React.FC = () => {
-  const { chatMessages, sendMessage } = useAppContext();
+  const { chatMessages, sendMessage, settings } = useAppContext();
   const [message, setMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [showQuickResponses, setShowQuickResponses] = useState(true);
+  
+  const quickResponses = [
+    { text: "I need to calm down", icon: Heart },
+    { text: "Help me feel grounded", icon: Sparkles },
+    { text: "Just listen please", icon: Brain },
+  ];
+  
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatMessages]);
   
   const handleSendMessage = () => {
     if (message.trim()) {
       sendMessage(message.trim());
       setMessage('');
+      setShowQuickResponses(false);
     }
+  };
+  
+  const handleQuickResponse = (text: string) => {
+    sendMessage(text);
+    setShowQuickResponses(false);
   };
   
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -26,47 +45,78 @@ const AIChat: React.FC = () => {
     }
   };
   
-  // Scroll to bottom when messages change
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [chatMessages]);
-  
   return (
     <PageContainer className="p-0 flex flex-col h-screen">
       <div className="px-4">
         <AppHeader title="Support Chat" />
       </div>
       
-      <div className="flex-1 overflow-y-auto px-4 py-2 bg-neutral-lightest">
+      <div className={`flex-1 overflow-y-auto px-4 py-2 transition-colors duration-300 ${
+        settings.darkMode ? 'bg-dark-bg' : 'bg-neutral-lightest'
+      }`}>
         <div className="max-w-md mx-auto space-y-4 pb-4">
           {chatMessages.map((msg, index) => (
             <MessageBubble key={msg.id} message={msg} delay={index * 0.1} />
           ))}
+          
+          {showQuickResponses && chatMessages.length === 1 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="space-y-2"
+            >
+              {quickResponses.map((response, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.7 + index * 0.1 }}
+                >
+                  <Button
+                    variant="ghost"
+                    fullWidth
+                    leftIcon={<response.icon size={18} />}
+                    onClick={() => handleQuickResponse(response.text)}
+                    className="justify-start"
+                  >
+                    {response.text}
+                  </Button>
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
+          
           <div ref={messagesEndRef} />
         </div>
       </div>
       
-      <div className="p-4 bg-white border-t border-neutral-lighter">
-        <div className="max-w-md mx-auto flex">
+      <div className={`p-4 border-t transition-colors duration-300 ${
+        settings.darkMode 
+          ? 'bg-dark-card border-dark-border' 
+          : 'bg-white border-neutral-lighter'
+      }`}>
+        <div className="max-w-md mx-auto flex gap-2">
           <textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Type your message..."
-            className="flex-1 resize-none border border-neutral-lighter rounded-l-lg p-3 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-transparent"
+            className={`flex-1 resize-none rounded-lg p-3 transition-colors duration-300
+              focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-transparent
+              ${settings.darkMode 
+                ? 'bg-dark-bg border-dark-border text-dark-text placeholder-neutral-medium' 
+                : 'bg-neutral-lightest border-neutral-lighter text-neutral-darkest'
+              }`}
             rows={1}
           />
-          <button
+          <Button
             onClick={handleSendMessage}
             disabled={!message.trim()}
-            className={`px-4 rounded-r-lg flex items-center justify-center ${
-              message.trim()
-                ? 'bg-primary text-white hover:bg-primary-dark'
-                : 'bg-neutral-lighter text-neutral-medium'
-            }`}
+            className="px-4 h-full"
           >
             <Send size={20} />
-          </button>
+          </Button>
         </div>
       </div>
       
@@ -81,6 +131,7 @@ interface MessageBubbleProps {
 }
 
 const MessageBubble: React.FC<MessageBubbleProps> = ({ message, delay }) => {
+  const { settings } = useAppContext();
   const isAI = message.sender === 'ai';
   
   return (
@@ -91,14 +142,22 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, delay }) => {
       className={`flex ${isAI ? 'justify-start' : 'justify-end'}`}
     >
       <div
-        className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+        className={`max-w-[80%] rounded-2xl px-4 py-3 transition-colors duration-300 ${
           isAI
-            ? 'bg-white text-neutral-darkest shadow-sm'
+            ? settings.darkMode
+              ? 'bg-dark-card text-dark-text'
+              : 'bg-white text-neutral-darkest'
             : 'bg-primary text-white'
         }`}
       >
         <p className="text-sm md:text-base">{message.text}</p>
-        <p className="text-xs mt-1 opacity-70">
+        <p className={`text-xs mt-1 ${
+          isAI
+            ? settings.darkMode
+              ? 'text-neutral-medium'
+              : 'text-neutral-dark'
+            : 'text-white/70'
+        }`}>
           {new Date(message.timestamp).toLocaleTimeString([], { 
             hour: '2-digit', 
             minute: '2-digit' 
